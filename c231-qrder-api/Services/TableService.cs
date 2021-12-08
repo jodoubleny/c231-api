@@ -28,7 +28,7 @@ namespace c231_qrder.Services
 
         public async Task<IEnumerable<TableDto>> GetAllByRestaurantIdAsync(string id)
         {
-            if (!await IsPresent(id))
+            if (!await IsRestaurantPresent(id))
             {
                 throw new DataException();
             }
@@ -37,7 +37,7 @@ namespace c231_qrder.Services
             {
                 QueryFilter = new List<ScanCondition>()
                 {
-                    new ScanCondition("TableId", ScanOperator.BeginsWith, tableSortKeyPrefix)
+                    new ScanCondition("TableId", ScanOperator.BeginsWith, Table.tableSortKeyPrefix)
                 }
             };
             List<Table> allTables = await context.QueryAsync<Table>(id, config).GetRemainingAsync();
@@ -54,7 +54,7 @@ namespace c231_qrder.Services
 
         public async Task AddAsync(string id, TableCreateDto tableCreateDto)
         {
-            if (!await IsPresent(id))
+            if (!await IsRestaurantPresent(id))
             {
                 throw new DataException();
             }
@@ -65,7 +65,7 @@ namespace c231_qrder.Services
             // set properties
             string guid = base.GetGuidAsStr();
             newTable.RestaurantId = id;
-            newTable.TableId = tableSortKeyPrefix + guid;
+            newTable.TableId = Table.tableSortKeyPrefix + guid;
 
             // check the name is duplicate
             if (await HasThisTableName(id, newTable.TableName))
@@ -76,19 +76,39 @@ namespace c231_qrder.Services
             await context.SaveAsync(newTable);
         }
 
-        public async Task<bool> IsPresent(string id)
+        public async Task SaveAsync(string id, TableDto tableDto)
         {
-            // check there is the restaurant
-            var restaurantService = new RestaurantService(dynamoDBClient, mapper);
-            RestaurantDto restaurantDto = await restaurantService.GetByIdAsync(id);
+            if (!await IsTablePresent(id, tableDto.TableId))
+            {
+                throw new DataException();
+            }
 
-            return (restaurantDto is not null);
+            // Dto mapping: TableDto -> Table
+            Table targetTable = mapper.Map<Table>(tableDto);
+
+            await context.SaveAsync(targetTable);
         }
 
-        public async Task<bool> IsPresent(string id, string tableId)
+        public async Task RemoveAsync(string id, string tableId)
+        {
+            if (!await IsTablePresent(id, tableId))
+            {
+                throw new DataException();
+            }
+
+            await context.DeleteAsync<Restaurant>(id, tableId);
+        }
+
+        public async Task<bool> IsRestaurantPresent(string id)
+        {
+            var restaurantService = new RestaurantService(dynamoDBClient, mapper);
+            return (await restaurantService.IsRestaurantPresent(id));
+        }
+
+        public async Task<bool> IsTablePresent(string id, string tableId)
         {
             // check there is the restaurant
-            if (!await IsPresent(id))
+            if (!await IsRestaurantPresent(id))
             {
                 return false;
             }
@@ -104,7 +124,7 @@ namespace c231_qrder.Services
         public async Task<bool> HasThisTableName(string id, string tableName)
         {
             // check there is the restaurant
-            if (!await IsPresent(id))
+            if (!await IsRestaurantPresent(id))
             {
                 return false;
             }

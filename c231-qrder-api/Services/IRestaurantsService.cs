@@ -11,6 +11,6 @@ namespace c231_qrder.Services
         Task<RestaurantDto> AddAsync(RestaurantCreateDto restaurantCreateDto);
         Task SaveAsync(RestaurantDto restaurantDto);
         Task RemoveAsync(string id);
-        Task<bool> IsAvailable(string id);
+        Task<bool> IsRestaurantPresent(string id);
     }
 }

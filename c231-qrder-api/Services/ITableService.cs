@@ -8,9 +8,9 @@ namespace c231_qrder.Services
     {
         Task<IEnumerable<TableDto>> GetAllByRestaurantIdAsync(string id);
         Task AddAsync(string id, TableCreateDto tableCreateDto);
-        //Task SaveAsync(IEnumerable<TableDto> tableDtos);
-        //Task RemoveAsync(string id, string tableId);
-        Task<bool> IsPresent(string id);
-        Task<bool> IsPresent(string id, string tableId);
+        Task SaveAsync(string id, TableDto tableDto);
+        Task RemoveAsync(string id, string tableId);
+        Task<bool> IsRestaurantPresent(string id);
+        Task<bool> IsTablePresent(string id, string tableId);
     }
 }

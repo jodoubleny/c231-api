@@ -8,8 +8,11 @@ namespace c231_qrder.Profiles
         public RestaurantProfile()
         {
             CreateMap<RestaurantCreateDto, Restaurant>();
-            CreateMap<Restaurant, RestaurantDto>()
-                .ReverseMap();
+            CreateMap<Restaurant, RestaurantDto>();
+            CreateMap<RestaurantDto, Restaurant>()
+                .ForMember(
+                    dest => dest.SortKey,
+                    opt => opt.MapFrom(src => Restaurant.restaurantSortKeyPrefix + src.RestaurantId));
         }
     }
 }

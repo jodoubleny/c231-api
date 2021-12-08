@@ -13,5 +13,7 @@ namespace c231_qrder.Models
         [DynamoDBProperty]
         public List<Table> AssignedTables { get; set; }
         public List<MenuItem> OrderedItems { get; set; }
+        [DynamoDBIgnore]
+        public static string orderSortKeyPrefix = "ORDER#";
     }
 }
