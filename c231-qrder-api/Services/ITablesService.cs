@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace c231_qrder.Services
 {
-    public interface ITableService
+    public interface ITablesService
     {
         Task<IEnumerable<TableDto>> GetAllByRestaurantIdAsync(string id);
         Task AddAsync(string id, TableCreateDto tableCreateDto);

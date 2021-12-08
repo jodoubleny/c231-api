@@ -1,58 +1,39 @@
-﻿using System.Collections.Generic;
-using System.Data;
-using System.Threading.Tasks;
-using Amazon.DynamoDBv2;
+﻿using Amazon.DynamoDBv2;
 using Amazon.Runtime;
 using AutoMapper;
 using c231_qrder.Models;
 using c231_qrder.Services;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace c231_qrder.Controllers
 {
     [ApiController]
     [Route("api/")]
-    public class RestaurantsController : ControllerBase
+    public class OrderController : ControllerBase
     {
-        private readonly IRestaurantsService restaurantsService;
+        private readonly IOrdersService ordersService;
 
-        public RestaurantsController(
+        public OrderController(
             IAmazonDynamoDB dynamoDBClient,
             IMapper mapper
             )
         {
-            restaurantsService = new RestaurantsService(dynamoDBClient, mapper);
+            ordersService = new OrdersService(dynamoDBClient, mapper);
         }
 
-        // GET: api/restaurants
-        [HttpGet("restaurants")]
-        public async Task<ActionResult<IEnumerable<RestaurantDto>>> GetAllRestaurants()
+        // GET: api/restaurant/5/orders
+        [HttpGet("restaurant/{id}/orders")]
+        public async Task<ActionResult<IEnumerable<OrderDto>>> GetAllTables(string id)
         {
-            IEnumerable<RestaurantDto> resultRestaurantDtos = new List<RestaurantDto>();
+            IEnumerable<OrderDto> resultOrderDtos = new List<OrderDto>();
             try
             {
-                resultRestaurantDtos = await restaurantsService.GetAllAsync();
-            }
-            catch (AmazonServiceException)
-            {
-                return StatusCode(500, "A problem happend while processing the request from the remote server.");
-            }
-            catch
-            {
-                return StatusCode(500, "Something went wrong while processing the request in the server.");
-            }
-
-            return Ok(resultRestaurantDtos);
-        }
-
-        // GET: api/restaurant/5
-        [HttpGet("restaurant/{id}")]
-        public async Task<ActionResult<RestaurantDto>> GetRestaurant(string id)
-        {
-            RestaurantDto result = new RestaurantDto();
-            try
-            {
-                result = await restaurantsService.GetByIdAsync(id);
+                resultOrderDtos = await ordersService.GetAllByRestaurantIdAsync(id);
             }
             catch (DataException)
             {
@@ -67,50 +48,23 @@ namespace c231_qrder.Controllers
                 return StatusCode(500, "Something went wrong while processing the request in the server.");
             }
 
-            return Ok(result);
+            return Ok(resultOrderDtos);
         }
 
-        // POST: api/restaurant
-        [HttpPost("restaurant")]
-        public async Task<ActionResult<RestaurantDto>> PostRestaurant(RestaurantCreateDto input)
+        // POST: api/restaurant/5/order
+        [HttpPost("restaurant/{id}/order")]
+        public async Task<IActionResult> PostTable(string id, OrderCreateDto orderCreateDto)
         {
             // Returns errors
-            if (input is null)
+            if (orderCreateDto is null)
             {
                 return BadRequest();
             }
-            if (!ModelState.IsValid)
+            if (orderCreateDto.AssignedTables.Count == 0)
             {
-                return BadRequest(ModelState);
+                return BadRequest();
             }
-
-            var resultRestaurantDto = new RestaurantDto();
-            try
-            {
-                resultRestaurantDto = await restaurantsService.AddAsync(input);
-            }
-            catch (DataException)
-            {
-                return NotFound();
-            }
-            catch (AmazonServiceException)
-            {
-                return StatusCode(500, "A problem happend while processing the request from the remote server.");
-            }
-            catch
-            {
-                return StatusCode(500, "Something went wrong while processing the request in the server.");
-            }
-
-            return Ok(resultRestaurantDto);
-        }
-
-        // PUT: api/restaurant/5
-        [HttpPut("restaurant")]
-        public async Task<IActionResult> PutRestaurant(RestaurantDto input)
-        {
-            // Returns errors
-            if (input is null)
+            if (orderCreateDto.OrderedItems.Count == 0)
             {
                 return BadRequest();
             }
@@ -121,7 +75,7 @@ namespace c231_qrder.Controllers
 
             try
             {
-                await restaurantsService.SaveAsync(input);
+                await ordersService.AddAsync(id, orderCreateDto);
             }
             catch (DataException)
             {
@@ -139,13 +93,47 @@ namespace c231_qrder.Controllers
             return NoContent();
         }
 
-        // DELETE: api/restaurant/5
-        [HttpDelete("restaurant/{id}")]
-        public async Task<IActionResult> DeleteRestaurant(string id)
+        // PUT: api/restaurant/5/order
+        [HttpPut("restaurant/{id}/order")]
+        public async Task<IActionResult> PutTable(string id, OrderDto input)
+        {
+            // Returns errors
+            if (input is null)
+            {
+                return BadRequest();
+            }
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                await ordersService.SaveAsync(id, input);
+            }
+            catch (DataException)
+            {
+                return NotFound();
+            }
+            catch (AmazonServiceException)
+            {
+                return StatusCode(500, "A problem happend while processing the request from the remote server.");
+            }
+            catch
+            {
+                return StatusCode(500, "Something went wrong while processing the request in the server.");
+            }
+
+            return NoContent();
+        }
+
+        // DELETE: api/restaurant/5/order?oid=
+        [HttpDelete("restaurant/{id}/order")]
+        public async Task<IActionResult> DeleteOrder(string id, [FromQuery(Name = "oid")] string orderId)
         {
             try
             {
-                await restaurantsService.RemoveAsync(id);
+                await ordersService.RemoveAsync(id, orderId);
             }
             catch (DataException)
             {

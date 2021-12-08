@@ -15,14 +15,14 @@ namespace c231_qrder.Controllers
     [Route("api/")]
     public class TablesController : ControllerBase
     {
-        private readonly ITableService tableService;
+        private readonly ITablesService tablesService;
 
         public TablesController(
             IAmazonDynamoDB dynamoDBClient,
             IMapper mapper
             )
         {
-            tableService = new TableService(dynamoDBClient, mapper);
+            tablesService = new TablesService(dynamoDBClient, mapper);
         }
 
         // GET: api/restaurant/5/tables
@@ -32,7 +32,7 @@ namespace c231_qrder.Controllers
             IEnumerable<TableDto> resultTableDtos = new List<TableDto>();
             try
             {
-                resultTableDtos = await tableService.GetAllByRestaurantIdAsync(id);
+                resultTableDtos = await tablesService.GetAllByRestaurantIdAsync(id);
             }
             catch (DataException)
             {
@@ -66,7 +66,7 @@ namespace c231_qrder.Controllers
 
             try
             {
-                await tableService.AddAsync(id, tableCreateDto);
+                await tablesService.AddAsync(id, tableCreateDto);
             }
             catch (DuplicateNameException)
             {
@@ -104,7 +104,7 @@ namespace c231_qrder.Controllers
 
             try
             {
-                await tableService.SaveAsync(id, input);
+                await tablesService.SaveAsync(id, input);
             }
             catch (DataException)
             {
@@ -128,7 +128,7 @@ namespace c231_qrder.Controllers
         {
             try
             {
-                await tableService.RemoveAsync(id, tableId);
+                await tablesService.RemoveAsync(id, tableId);
             }
             catch (DataException)
             {

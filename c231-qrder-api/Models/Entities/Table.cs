@@ -10,7 +10,7 @@ namespace c231_qrder.Models
         [DynamoDBRangeKey("SortKey")]
         public string TableId { get; set; }
         public string TableName { get; set; }
-        public Order? OccupiedOrder { get; set; }
+
         [DynamoDBIgnore]
         public static string tableSortKeyPrefix = "TABLE#";
     }

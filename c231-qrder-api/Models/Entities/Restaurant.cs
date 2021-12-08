@@ -14,6 +14,7 @@ namespace c231_qrder.Models
         public string RestaurantName { get; set; }
         public bool IsRunning { get; set; }
         public List<MenuItem> Menus { get; set; }
+
         [DynamoDBIgnore]
         public static string restaurantSortKeyPrefix = "INFO#";
     }

@@ -5,9 +5,8 @@ using System.Threading.Tasks;
 
 namespace c231_qrder.Models
 {
-    public class TableDto
+    public class AssignedTableDto
     {
-        public string RestaurantId { get; set; }
         public string TableId { get; set; }
         public string TableName { get; set; }
     }

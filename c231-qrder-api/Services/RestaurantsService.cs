@@ -12,12 +12,12 @@ using Table = c231_qrder.Models.Table;
 
 namespace c231_qrder.Services
 {
-    public class RestaurantService : ServiceBase, IRestaurantsService
+    public class RestaurantsService : ServiceBase, IRestaurantsService
     {
         private readonly IDynamoDBContext context;
         private readonly IMapper mapper;
 
-        public RestaurantService(
+        public RestaurantsService(
             IAmazonDynamoDB dynamoDBClient,
             IMapper mapper
             )

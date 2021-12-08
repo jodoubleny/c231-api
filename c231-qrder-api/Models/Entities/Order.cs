@@ -11,8 +11,10 @@ namespace c231_qrder.Models
         [DynamoDBRangeKey("SortKey")]
         public string OrderId { get; set; }
         [DynamoDBProperty]
-        public List<Table> AssignedTables { get; set; }
+        public bool IsArchived { get; set; }
+        public List<AssignedTableDto> AssignedTables { get; set; }
         public List<MenuItem> OrderedItems { get; set; }
+
         [DynamoDBIgnore]
         public static string orderSortKeyPrefix = "ORDER#";
     }

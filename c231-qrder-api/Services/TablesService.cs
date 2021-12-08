@@ -10,13 +10,13 @@ using Table = c231_qrder.Models.Table;
 
 namespace c231_qrder.Services
 {
-    public class TableService : ServiceBase, ITableService
+    public class TablesService : ServiceBase, ITablesService
     {
         private readonly IAmazonDynamoDB dynamoDBClient;
         private readonly IDynamoDBContext context;
         private readonly IMapper mapper;
 
-        public TableService(
+        public TablesService(
             IAmazonDynamoDB dynamoDBClient,
             IMapper mapper
             )
@@ -101,7 +101,7 @@ namespace c231_qrder.Services
 
         public async Task<bool> IsRestaurantPresent(string id)
         {
-            var restaurantService = new RestaurantService(dynamoDBClient, mapper);
+            var restaurantService = new RestaurantsService(dynamoDBClient, mapper);
             return (await restaurantService.IsRestaurantPresent(id));
         }
 
