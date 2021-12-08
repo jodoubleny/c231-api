@@ -58,7 +58,7 @@ namespace c231_qrder.Services
         {
             if (!await IsRestaurantAvailable(id))
             {
-                throw new Exception("Restaurant is not available");
+                throw new DataException();
             }
 
             // check tableId is in the Restaurant.Tables
