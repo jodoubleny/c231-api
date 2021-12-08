@@ -11,6 +11,7 @@ namespace c231_qrder.Services
         Task<IEnumerable<OrderDto>> GetAllByRestaurantIdAsync(string id);
         Task AddAsync(string id, OrderCreateDto orderCreateDto);
         Task SaveAsync(string id, OrderDto orderDto);
+        Task ArchiveAsync(string id, string orderId);
         Task RemoveAsync(string id, string orderId);
         Task<bool> IsRestaurantAvailable(string id);
         Task<bool> IsOrderPresent(string id, string orderId);

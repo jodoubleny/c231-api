@@ -42,6 +42,7 @@ namespace c231_qrder.Services
                 }
             };
             List<Order> allOrders = await context.QueryAsync<Order>(id, config).GetRemainingAsync();
+            List<Order> notArchivedOrders = allOrders.Where(o => (o.IsArchived == false)).ToList();
 
             var allOrderDtos = new List<OrderDto>();
             allOrders.ForEach(o =>
@@ -83,6 +84,19 @@ namespace c231_qrder.Services
 
             // Dto mapping: OrderDto -> Order
             Order targetOrder = mapper.Map<Order>(orderDto);
+
+            await context.SaveAsync(targetOrder);
+        }
+
+        public async Task ArchiveAsync(string id, string orderId)
+        {
+            if (!await IsOrderPresent(id, orderId))
+            {
+                throw new DataException();
+            }
+
+            Order targetOrder = await context.LoadAsync<Order>(id, orderId);
+            targetOrder.IsArchived = true;
 
             await context.SaveAsync(targetOrder);
         }

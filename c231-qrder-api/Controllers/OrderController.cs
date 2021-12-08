@@ -127,13 +127,33 @@ namespace c231_qrder.Controllers
             return NoContent();
         }
 
-        // DELETE: api/restaurant/5/order?oid=
+        // DELETE: api/restaurant/5/order?oid=5&mode=delete
         [HttpDelete("restaurant/{id}/order")]
-        public async Task<IActionResult> DeleteOrder(string id, [FromQuery(Name = "oid")] string orderId)
+        public async Task<IActionResult> DeleteOrder(
+            string id,
+            [FromQuery(Name = "oid")] string orderId,
+            [FromQuery(Name = "mode")] string? deleteMode
+            )
         {
             try
             {
-                await ordersService.RemoveAsync(id, orderId);
+                if (deleteMode is not null)
+                {
+                    if (deleteMode != "delete")
+                    {
+                        return BadRequest();
+                    }
+                    else
+                    {
+                        // mode is not null && mode == "delete"
+                        await ordersService.RemoveAsync(id, orderId);
+                    }
+                }
+                else
+                {
+                    // mode is null
+                    await ordersService.ArchiveAsync(id, orderId);
+                }
             }
             catch (DataException)
             {
