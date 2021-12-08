@@ -10,6 +10,7 @@ namespace c231_qrder.Profiles
             CreateMap<TableCreateDto, Table>();
             CreateMap<Table, TableDto>()
                 .ReverseMap();
+            CreateMap<Table, TableOrderDto>();
         }
     }
 }

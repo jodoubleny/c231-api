@@ -27,9 +27,9 @@ namespace c231_qrder.Controllers
 
         // GET: api/restaurant/5/tables
         [HttpGet("restaurant/{id}/tables")]
-        public async Task<ActionResult<IEnumerable<TableDto>>> GetAllTables(string id)
+        public async Task<ActionResult<IEnumerable<TableOrderDto>>> GetAllTables(string id)
         {
-            IEnumerable<TableDto> resultTableDtos = new List<TableDto>();
+            IEnumerable<TableOrderDto> resultTableDtos = new List<TableOrderDto>();
             try
             {
                 resultTableDtos = await tablesService.GetAllByRestaurantIdAsync(id);

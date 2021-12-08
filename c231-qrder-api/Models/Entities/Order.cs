@@ -11,8 +11,9 @@ namespace c231_qrder.Models
         [DynamoDBRangeKey("SortKey")]
         public string OrderId { get; set; }
         [DynamoDBProperty]
+        public string TableGuid { get; set; }
+        public string OrderGuid { get; set; }
         public bool IsArchived { get; set; }
-        public List<AssignedTableDto> AssignedTables { get; set; }
         public List<MenuItem> OrderedItems { get; set; }
 
         [DynamoDBIgnore]

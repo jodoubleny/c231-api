@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
+
 namespace c231_qrder.Models
 {
-    public class OrderDto
+    public class OrderUpdateDto
     {
         public string RestaurantId { get; set; }
         public string TableGuid { get; set; }

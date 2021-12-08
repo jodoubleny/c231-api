@@ -6,7 +6,7 @@ namespace c231_qrder.Services
 {
     public interface ITablesService
     {
-        Task<IEnumerable<TableDto>> GetAllByRestaurantIdAsync(string id);
+        Task<IEnumerable<TableOrderDto>> GetAllByRestaurantIdAsync(string id);
         Task AddAsync(string id, TableCreateDto tableCreateDto);
         Task SaveAsync(string id, TableDto tableDto);
         Task RemoveAsync(string id, string tableId);

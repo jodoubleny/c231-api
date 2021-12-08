@@ -8,11 +8,11 @@ namespace c231_qrder.Services
 {
     interface IOrdersService
     {
-        Task<IEnumerable<OrderDto>> GetAllByRestaurantIdAsync(string id);
+        Task<IEnumerable<OrderDto>> GetAllByRestaurantIdAsync(string id, string? getMode);
         Task AddAsync(string id, OrderCreateDto orderCreateDto);
         Task SaveAsync(string id, OrderDto orderDto);
-        Task ArchiveAsync(string id, string orderId);
-        Task RemoveAsync(string id, string orderId);
+        Task ArchiveAsync(string id, OrderDeleteDto orderDeleteDto);
+        Task RemoveAsync(string id, OrderDeleteDto orderDeleteDto);
         Task<bool> IsRestaurantAvailable(string id);
         Task<bool> IsOrderPresent(string id, string orderId);
     }

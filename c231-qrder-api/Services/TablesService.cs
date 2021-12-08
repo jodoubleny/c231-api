@@ -5,6 +5,7 @@ using AutoMapper;
 using c231_qrder.Models;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Threading.Tasks;
 using Table = c231_qrder.Models.Table;
 
@@ -26,30 +27,65 @@ namespace c231_qrder.Services
             this.mapper = mapper;
         }
 
-        public async Task<IEnumerable<TableDto>> GetAllByRestaurantIdAsync(string id)
+        public async Task<IEnumerable<TableOrderDto>> GetAllByRestaurantIdAsync(string id)
         {
             if (!await IsRestaurantPresent(id))
             {
                 throw new DataException();
             }
 
-            var config = new DynamoDBOperationConfig()
+            var configTables = new DynamoDBOperationConfig()
             {
                 QueryFilter = new List<ScanCondition>()
                 {
-                    new ScanCondition("TableId", ScanOperator.BeginsWith, Table.tableSortKeyPrefix)
+                    new ScanCondition("TableId", ScanOperator.BeginsWith, Table.tableSortKeyPrefix),
+                    new ScanCondition("TableName", ScanOperator.IsNotNull)
                 }
             };
-            List<Table> allTables = await context.QueryAsync<Table>(id, config).GetRemainingAsync();
+            List<Table> allTables = await context.QueryAsync<Table>(id, configTables).GetRemainingAsync();
 
-            var allTableDtos = new List<TableDto>();
-            allTables.ForEach(t =>
+            var configOrders = new DynamoDBOperationConfig()
             {
-                var targetTableDto = mapper.Map<TableDto>(t);
-                allTableDtos.Add(targetTableDto);
+                QueryFilter = new List<ScanCondition>()
+                {
+                    new ScanCondition("OrderId", ScanOperator.BeginsWith, Table.tableSortKeyPrefix),
+                    new ScanCondition("IsArchived", ScanOperator.Equal, false)
+                }
+            };
+            List<Order> allOrders = await context.QueryAsync<Order>(id, configOrders).GetRemainingAsync();
+
+            var allOrderDtos = new List<OrderDto>();
+            allOrders.ForEach(o =>
+            {
+                OrderDto targetOrderDto = mapper.Map<OrderDto>(o);
+                allOrderDtos.Add(targetOrderDto);
             });
 
-            return allTableDtos;
+            IEnumerable<TableOrderDto> allTableOrderDtos = allTables.GroupJoin(allOrderDtos,
+                t => t.TableId,
+                o => o.TableGuid,
+                (t, orderDtos) =>
+                    new TableOrderDto
+                    {
+                        RestaurantId = t.RestaurantId,
+                        TableId = t.TableId,
+                        TableName = t.TableName,
+                        OccupiedOrder = orderDtos.Select(o => o).DefaultIfEmpty().First()
+                    });
+
+            //IEnumerable<TableOrderDto> allTableOrderDtos = (from t in allTables
+            //                                                join o in allOrderDtos on t.TableId equals o.TableGuid
+            //                                                into tempOrderDtos
+            //                                                from orderDtos in tempOrderDtos.DefaultIfEmpty()
+            //                                                select new TableOrderDto
+            //                                                {
+            //                                                    RestaurantId = t.RestaurantId,
+            //                                                    TableId = t.TableId,
+            //                                                    TableName = t.TableName,
+            //                                                    occupiedOrder = orderDtos
+            //                                                });
+
+            return allTableOrderDtos;
         }
 
         public async Task AddAsync(string id, TableCreateDto tableCreateDto)
@@ -113,12 +149,9 @@ namespace c231_qrder.Services
                 return false;
             }
 
-            // check there is the table in the restaurant
-            var tableDtos = new List<TableDto>();
-            tableDtos.AddRange(await GetAllByRestaurantIdAsync(id));
-            TableDto targetTableDto = tableDtos.Find(td => td.TableId == tableId);
+            Table targetTable = await context.LoadAsync<Table>(id, tableId);
 
-            return (targetTableDto is not null);
+            return (targetTable is not null);
         }
 
         public async Task<bool> HasThisTableName(string id, string tableName)

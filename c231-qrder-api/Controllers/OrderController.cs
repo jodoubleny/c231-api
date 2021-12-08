@@ -28,12 +28,12 @@ namespace c231_qrder.Controllers
 
         // GET: api/restaurant/5/orders
         [HttpGet("restaurant/{id}/orders")]
-        public async Task<ActionResult<IEnumerable<OrderDto>>> GetAllTables(string id)
+        public async Task<ActionResult<IEnumerable<OrderDto>>> GetAllTables(string id, [FromQuery(Name = "mode")] string? getMode)
         {
             IEnumerable<OrderDto> resultOrderDtos = new List<OrderDto>();
             try
             {
-                resultOrderDtos = await ordersService.GetAllByRestaurantIdAsync(id);
+                resultOrderDtos = await ordersService.GetAllByRestaurantIdAsync(id, getMode);
             }
             catch (DataException)
             {
@@ -53,14 +53,12 @@ namespace c231_qrder.Controllers
 
         // POST: api/restaurant/5/order
         [HttpPost("restaurant/{id}/order")]
-        public async Task<IActionResult> PostTable(string id, OrderCreateDto orderCreateDto)
+        public async Task<IActionResult> PostTable(
+            string id,
+            OrderCreateDto orderCreateDto)
         {
             // Returns errors
-            if (orderCreateDto is null)
-            {
-                return BadRequest();
-            }
-            if (orderCreateDto.AssignedTables.Count == 0)
+            if (orderCreateDto is null || id != orderCreateDto.RestaurantId)
             {
                 return BadRequest();
             }
@@ -131,8 +129,8 @@ namespace c231_qrder.Controllers
         [HttpDelete("restaurant/{id}/order")]
         public async Task<IActionResult> DeleteOrder(
             string id,
-            [FromQuery(Name = "oid")] string orderId,
-            [FromQuery(Name = "mode")] string? deleteMode
+            [FromQuery(Name = "mode")] string? deleteMode,
+            OrderDeleteDto input
             )
         {
             try
@@ -146,13 +144,13 @@ namespace c231_qrder.Controllers
                     else
                     {
                         // mode is not null && mode == "delete"
-                        await ordersService.RemoveAsync(id, orderId);
+                        await ordersService.RemoveAsync(id, input);
                     }
                 }
                 else
                 {
                     // mode is null
-                    await ordersService.ArchiveAsync(id, orderId);
+                    await ordersService.ArchiveAsync(id, input);
                 }
             }
             catch (DataException)

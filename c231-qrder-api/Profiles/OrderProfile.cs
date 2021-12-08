@@ -8,8 +8,12 @@ namespace c231_qrder.Profiles
         public OrderProfile()
         {
             CreateMap<OrderCreateDto, Order>();
-            CreateMap<Order, OrderDto>()
-                .ReverseMap();
+            CreateMap<Order, OrderDto>();
+            CreateMap<OrderDto, Order>()
+                .ForMember(
+                    dest => dest.OrderId,
+                    opt => opt.MapFrom(src =>
+                        src.TableGuid + src.OrderGuid));
         }
     }
 }
